@@ -204,3 +204,68 @@ describe('rankJobsByFit', () => {
     expect(ranked[0].heuristicScore).toHaveProperty('dimensions')
   })
 })
+
+describe('scoreJobFitHeuristic regression fixes', () => {
+  // Regression: scoreDomainMatch returned 50 (neutral) for profiles with no domain
+  // tags, silently inflating every score by up to 10 points (0.20 weight × 50).
+  it('domainMatch is 0 when profile has no domain tags', () => {
+    const noDomainProfile = makeProfile({
+      entries: [
+        {
+          id: 'e1',
+          type: 'experience',
+          role: 'Engineer',
+          company: 'Acme',
+          location: 'NY',
+          startDate: 'Jan 2023',
+          endDate: 'Present',
+          durationMonths: 12,
+          skills: ['typescript', 'react'],
+          metrics: [],
+          domain: [], // no domains tagged
+          experienceType: 'engineer',
+          bullets: ['Built stuff'],
+          recencyWeight: 1.0
+        }
+      ]
+    })
+    const result = scoreJobFitHeuristic(noDomainProfile, makeJob())
+    expect(result.dimensions.domainMatch).toBe(0)
+  })
+
+  // Regression: scoreSkillMatch denominator was `matched + missing` where
+  // `matched` comes from profile×jobText and `missing` from requirements only —
+  // incoherent populations. A job with 0 explicit requirements always yielded
+  // baseRatio = 1.0 regardless of actual skill overlap.
+  it('skillMatch is not inflated to 100 when job has no explicit requirements but skills diverge', () => {
+    const mechanicalProfile = makeProfile({
+      entries: [
+        {
+          id: 'e1',
+          type: 'experience',
+          role: 'Mechanical Engineer',
+          company: 'OldCo',
+          location: 'Detroit, MI',
+          startDate: 'Jan 2020',
+          endDate: 'Dec 2022',
+          durationMonths: 36,
+          skills: ['CAD', 'thermodynamics', 'materials science', 'SolidWorks'],
+          metrics: [],
+          domain: ['manufacturing'],
+          experienceType: 'engineer',
+          bullets: ['Designed mechanical components'],
+          recencyWeight: 0.5
+        }
+      ]
+    })
+    const softwareJob = makeJob({
+      title: 'Senior Software Engineer',
+      description: 'Build distributed systems with TypeScript, React, Kubernetes, and PostgreSQL.',
+      requirements: [] // no explicit requirements — was the trigger for the bug
+    })
+    const result = scoreJobFitHeuristic(mechanicalProfile, softwareJob)
+    // Before the fix, baseRatio was always 1.0 when requirements=[],
+    // driving skillMatch toward 100. After the fix it should reflect real overlap.
+    expect(result.dimensions.skillMatch).toBeLessThan(60)
+  })
+})

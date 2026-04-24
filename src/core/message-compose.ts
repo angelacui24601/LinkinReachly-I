@@ -18,7 +18,7 @@ export function fillTemplate(tpl: string, row: TargetRow, facts: ProfileFacts, c
   const firmName = row.firm_name || company
   const principalName = row.principal_name || row.firstName || first
   const crd = row.crd_number || row.crd || ''
-  const ticker = (row.ticker || row.symbol || '').trim() || 'a few'
+  const ticker = (row.ticker || row.symbol || '').trim()
   const messageVariant =
     (row.message_variant || row.variant_note || '').trim() ||
     'I wanted to connect as a peer in the allocator space — no formal ask on my side.'

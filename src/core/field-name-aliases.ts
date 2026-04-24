@@ -34,7 +34,7 @@ const NORMALIZATIONS: Array<{ re: RegExp; to: string }> = [
   { re: /\bfield\s*of\s*study\b/gi, to: 'Field of study' },
   { re: /\barea\s*of\s*(?:study|concentration)\b/gi, to: 'Field of study' },
   { re: /\b(?:academic\s*)?major\b/gi, to: 'Field of study' },
-  { re: /\bgraduation\s*year\b/gi, to: 'Year of To' }
+  { re: /\bgraduation\s*year\b/gi, to: 'Graduation Year' }
 ]
 
 export function normalizeFieldLabelForSnapshotMatch(raw: string): string {

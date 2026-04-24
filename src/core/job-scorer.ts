@@ -184,7 +184,9 @@ function scoreSkillMatch(profile: UserProfile, job: JobPosting): { score: number
   }
 
   const baseRatio = allProfileSkills.size > 0
-    ? matched.length / Math.max(matched.length + missing.length, 1)
+    ? allJobRequirements.length > 0
+      ? (allJobRequirements.length - missing.length) / allJobRequirements.length
+      : matched.length / Math.max(allProfileSkills.size, 1)
     : 0
   const recencyBonus = totalWeight > 0 ? weightedMatches / totalWeight : 0
   const score = Math.round(Math.min(100, (baseRatio * 60 + recencyBonus * 40)))
@@ -204,7 +206,7 @@ function scoreDomainMatch(profile: UserProfile, job: JobPosting): number {
     }
   }
 
-  if (domainWeights.size === 0) return 50 // neutral
+  if (domainWeights.size === 0) return 0 // no domain signal — do not inflate scores for untagged profiles
 
   let bestMatch = 0
   for (const [domain, weight] of domainWeights) {

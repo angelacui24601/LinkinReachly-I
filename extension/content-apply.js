@@ -1391,7 +1391,6 @@ var clickEasyApply = async function() {
       }
     }
   }
-}
 
 /**
  * Locate the Easy Apply button and return its center coordinates + metadata
@@ -2828,3 +2827,4 @@ var autoFillFromMemory = async function() {
 }
 
 }
+
